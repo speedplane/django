@@ -1254,7 +1254,8 @@ class DateTimeField(DateField):
 
     def pre_save(self, model_instance, add):
         if self.auto_now or (self.auto_now_add and add):
-            value = timezone.now()
+            value = timezone.now() if settings.USE_TZ else \
+                datetime.datetime.utcnow()
             setattr(model_instance, self.attname, value)
             return value
         else:
@@ -1954,7 +1955,7 @@ class TimeField(Field):
 
     def pre_save(self, model_instance, add):
         if self.auto_now or (self.auto_now_add and add):
-            value = datetime.datetime.now().time()
+            value = datetime.datetime.utcnow().time()
             setattr(model_instance, self.attname, value)
             return value
         else:
