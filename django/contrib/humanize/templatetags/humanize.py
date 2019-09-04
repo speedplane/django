@@ -171,7 +171,8 @@ def naturalday(value, arg=None):
     except ValueError:
         # Date arguments out of range
         return value
-    today = datetime.now(tzinfo).date()
+    # [speedplane]: Hack to ensure we only use UTC. Added UTC.
+    today = (datetime.now(tzinfo) if tzinfo else datetime.utcnow()).date() 
     delta = value - today
     if delta.days == 0:
         return _('today')
@@ -193,7 +194,9 @@ def naturaltime(value):
     if not isinstance(value, date):  # datetime is a subclass of date
         return value
 
-    now = datetime.now(utc if is_aware(value) else None)
+    # [speedplane]: Hack to ensure we only use UTC. Old line:
+    # now = datetime.now(utc if is_aware(value) else None)
+    now = datetime.now(utc) if is_aware(value) else datetime.utcnow()
     if value < now:
         delta = now - value
         if delta.days != 0:
