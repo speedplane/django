@@ -95,6 +95,10 @@ class DeferredAttribute(object):
         opts = non_deferred_model._meta
 
         assert instance is not None
+        # If this instance is deleted, it won't have a pk.
+        if not instance.pk:
+            raise Exception("DeferredAttribute: no primary key, instance "
+                "deleted? (%s | %s | %s)"%(self.field_name, instance, owner))
         data = instance.__dict__
         if data.get(self.field_name, self) is self:
             # self.field_name is the attname of the field, but only() takes the
