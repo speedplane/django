@@ -2,6 +2,8 @@
 
 import time
 import pickle
+import logging
+from threading import local
 
 from django.core.cache.backends.base import BaseCache, DEFAULT_TIMEOUT
 from django.utils import six
@@ -160,7 +162,12 @@ class BaseMemcachedCache(six.with_metaclass(BaseMemcachedCacheMethods, BaseCache
 class MemcachedCache(BaseMemcachedCache):
     "An implementation of a cache binding using python-memcached"
     def __init__(self, server, params):
-        import memcache
+        try:
+            import memcache
+        except ImportError as e:
+            logging.warning("Install memcached and python-memcached (apt-get "
+                "install memcached && pip install python-memcached): %s", e)
+            raise
         super(MemcachedCache, self).__init__(server, params,
                                              library=memcache,
                                              value_not_found_exception=ValueError)
@@ -175,7 +182,13 @@ class MemcachedCache(BaseMemcachedCache):
 class PyLibMCCache(BaseMemcachedCache):
     "An implementation of a cache binding using pylibmc"
     def __init__(self, server, params):
-        import pylibmc
+        try:
+            import pylibmc
+        except ImportError:
+            logging.warning("Install memcached and pylibmc "
+                "(apt-get install memcached && pip install pylibmc): %s", e)
+            raise
+        self._local = local()
         super(PyLibMCCache, self).__init__(server, params,
                                            library=pylibmc,
                                            value_not_found_exception=pylibmc.NotFound)
